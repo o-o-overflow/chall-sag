@@ -22,7 +22,7 @@ var sagproxy_compiled = JSON.parse(fs.readFileSync('build/contracts/SagProxy.jso
 var SagProxy = contract({abi: sagproxy_compiled.abi});
 SagProxy.setProvider(provider);
 
-var halloffame = fs.existsSync(kHallOfFameDb) ? fs.readFileSync(kHallOfFameDb) : {};
+var halloffame = fs.existsSync(kHallOfFameDb) ? JSON.parse(fs.readFileSync(kHallOfFameDb)) : {};
 
 (async () => {
     try {
