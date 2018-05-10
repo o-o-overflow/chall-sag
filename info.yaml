@@ -3,6 +3,8 @@ title: "SAG?" # this is the title that will show up on the scoreboard
 description: "Desc for the scoreboard"
 # list of files that should be public (these will be made available via the scoreboard)
 public_files: [
+    "public_files/SagProxy.sol",
+    "public_files/sagd.js"
 ]
 tags: ["reverse", "crypto"] # list of tags
 author: "slipper"
