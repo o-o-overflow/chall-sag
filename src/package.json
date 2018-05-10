@@ -1,7 +1,7 @@
 {
   "name": "sag",
   "version": "1.0.0",
-  "description": "sag daemon/attacker",
+  "description": "sag daemon/exploit",
   "directories": {
     "test": "test"
   },
