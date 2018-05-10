@@ -2,12 +2,12 @@ pragma solidity ^0.4.17;
 
 import "./Sag.sol";
 
-contract SagFactory {
+contract SagProxy {
     event RequestRecord(address sender);
     event HallOfFameRecord(bytes32 msgHash, uint8 v, bytes32 r, bytes32 s);
     event PrizeReady(address winner, bytes prize);
 
-    Sag private sagAddress;
+    Sag private sag;
 
     address private owner;
 
@@ -17,10 +17,15 @@ contract SagFactory {
         _;
     }
 
-    constructor() public
+    constructor(address sag_addr) public
     {
         owner = msg.sender;
-        sagAddress = new Sag();
+        sag = Sag(sag_addr);
+    }
+
+    function gamble(uint256 guess, uint256 seed) public
+    {
+        sag.gamble(guess, seed);
     }
 
     function requestPrize(bytes32 msgHash, uint8 v, bytes32 r, bytes32 s) public
@@ -28,12 +33,11 @@ contract SagFactory {
     {
         emit RequestRecord(msg.sender);
 
-        if (ecrecover(msgHash, v, r, s) == msg.sender) {
+        if (ecrecover(msgHash, v, r, s) == msg.sender && sag.isWinner(msg.sender)) {
             emit HallOfFameRecord(msgHash, v, r, s);
             return true;
-        } else {
-            return false;
         }
+        return false;
     }
 
     function deliverPrize(address winner, bytes prize) public onlyOwner

@@ -18,9 +18,9 @@ provider.sendAsync = async function() {
 var target_addr = process.argv[2];
 console.debug('target address = ' + target_addr);
 
-var sagfactory_compiled = JSON.parse(fs.readFileSync('build/contracts/SagFactory.json'));
-var SagFactory = contract({abi: sagfactory_compiled.abi});
-SagFactory.setProvider(provider);
+var sagproxy_compiled = JSON.parse(fs.readFileSync('build/contracts/SagProxy.json'));
+var SagProxy = contract({abi: sagproxy_compiled.abi});
+SagProxy.setProvider(provider);
 
 var halloffame = fs.existsSync(kHallOfFameDb) ? fs.readFileSync(kHallOfFameDb) : {};
 
@@ -30,9 +30,9 @@ var halloffame = fs.existsSync(kHallOfFameDb) ? fs.readFileSync(kHallOfFameDb) :
         console.log('using account', me);
         web3.eth.defaultAccount = me.address;
 
-        var sag_factory = await SagFactory.at(target_addr);
+        var sag_proxy = await SagProxy.at(target_addr);
 
-        sag_factory.HallOfFameRecord(null, {
+        sag_proxy.HallOfFameRecord(null, {
             fromBlock: 1
         }, async (e, r) => {
             if (!e) {
@@ -52,7 +52,7 @@ var halloffame = fs.existsSync(kHallOfFameDb) ? fs.readFileSync(kHallOfFameDb) :
                         console.log('encrypted flag', encrypted);
                         const prize = '0x' + EthCrypto.cipher.stringify(encrypted);
                         console.log('prize for', addr, prize);
-                        await sag_factory.deliverPrize(addr, prize, {
+                        await sag_proxy.deliverPrize(addr, prize, {
                             gas: 1000000,
                             from: me.address,
                         });
