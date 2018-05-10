@@ -1,8 +1,9 @@
 pragma solidity ^0.4.17;
 
 contract Sag {
-    event HasGambleRequest(address sender);
-    event GambleResult(address sender, uint256 guess, uint256 max);
+    event GambleRequest(address player);
+    event GambleResult(address player, uint256 seed);
+    // event GambleStats(address player, uint256 swap);
 
     mapping (address => bool) public winners;
 
@@ -15,7 +16,7 @@ contract Sag {
     constructor() public
     {
         owner = msg.sender;
-        gas_limit = 3000000;
+        gas_limit = 2000000;
     }
 
     modifier gasLimit
@@ -31,9 +32,10 @@ contract Sag {
     }
 
     function gamble(uint256 guess, uint256 seed) public gasLimit {
-        emit HasGambleRequest(msg.sender);
-
         require(!winners[msg.sender]);
+
+        // if someone is here, he has bypassed the proxy
+        emit GambleRequest(msg.sender);
 
         uint i;
         uint j;
@@ -43,19 +45,25 @@ contract Sag {
             tmp = uint256(keccak256(tmp)) ^ mask;
             data[i] = tmp;
         }
+
+        // uint k = 0;
+
         for (i = 0; i < 32; i++) {
             for (j = i + 1; j < 32; j++) {
                 if (data[i] < data[j]) {
+                    // k += 1;
                     tmp = data[i];
                     data[i] = data[j];
                     data[j] = tmp;
                 }
             }
         }
+        // emit GambleStats(msg.sender, k);
+
         if (guess == data[0]) {
+            emit GambleResult(msg.sender, seed);
             winners[msg.sender] = true;
         }
-        emit GambleResult(msg.sender, guess, data[0]);
     }
 
     function isWinner(address player) public view
@@ -64,11 +72,13 @@ contract Sag {
         return winners[player];
     }
 
-    function setGasLimit(uint256 limit) public onlyOwner {
+    function _setGasLimit(uint256 limit) public onlyOwner {
+        // obfuscate the function signature, because `setGasLimit(uint256)`
+        // is already in someone's database
         gas_limit = limit;
     }
 
-    function addWinner(address player) public onlyOwner {
+    function _addWinner(address player) public onlyOwner {
         winners[player] = true;
     }
 }

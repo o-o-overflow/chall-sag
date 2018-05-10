@@ -32,7 +32,7 @@ var halloffame = fs.existsSync(kHallOfFameDb) ? fs.readFileSync(kHallOfFameDb) :
 
         var sag_proxy = await SagProxy.at(target_addr);
 
-        sag_proxy.HallOfFameRecord(null, {
+        sag_proxy.PrizeRequest(null, {
             fromBlock: 1
         }, async (e, r) => {
             if (!e) {

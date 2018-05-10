@@ -9,6 +9,6 @@ module.exports = function(deployer) {
         return deployer.deploy(SagProxy, Sag.address);
     }).then((instance) => {
         sag_proxy = instance;
-        return sag.addWinner(sag_proxy.address);
+        return sag._addWinner(sag_proxy.address);
     });
 }

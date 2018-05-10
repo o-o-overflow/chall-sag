@@ -28,7 +28,7 @@ function genseq(seed, mask) {
     let tmp = seed;
     for (let i = 0; i < 32; i++) {
         tmp = web3.utils.toBN(web3.utils.soliditySha3(tmp)).xor(mask);
-        data[i] = web3.utils.toHex(tmp);
+        data[i] = tmp;
     }
     return data;
 }
@@ -37,7 +37,7 @@ function count(data) {
     let cnt = 0;
     for (let i = 0; i < 32; i++) {
         for (let j = i + 1; j < 32; j++) {
-            if (data[i] < data[j]) {
+            if (data[i].lt(data[j])) {
                 cnt += 1;
                 let tmp = data[i];
                 data[i] = data[j];
@@ -65,7 +65,7 @@ function fight(mask, limit) {
                 numbers: seq,
                 sorted: seq_,
                 swap: cnt,
-                max: seq_[0],
+                max: web3.utils.toHex(seq_[0]),
                 seed: web3.utils.toHex(seed),
             }
         }
@@ -74,7 +74,7 @@ function fight(mask, limit) {
 
 (async () => {
     try {
-        const me = web3.eth.accounts.privateKeyToAccount('0xa5f34f6876b0e6f9936f235ed86fd4e07245da5c2d39f024ff732339ec94dffc');
+        const me = web3.eth.accounts.privateKeyToAccount('0x101dc868a5a02eeac59fafe817d992fd32ba6ee23ab41ef754edc84a2ff13690');
 
         console.log('using account', me);
 
@@ -85,25 +85,43 @@ function fight(mask, limit) {
         console.log('owner', owner);
 
         var sag = await Sag.at(sag_addr);
+        const gas_limit = parseInt(await web3.eth.getStorageAt(sag.address, 2), 16);
+        console.log('gas limit', gas_limit);
 
-        // gas est: k + swap * 10576
-        var result = fight(web3.utils.toBN(me.address), 150);
+        const kGasBase = 971436;
+        const kGasSwap = 10576;
+        const max_swap = (gas_limit - kGasBase) / kGasSwap;
+        console.log('make sure swap <=', max_swap);
+        // gas est: base + swap * 10576
+
+        /*
+        var result = fight(web3.utils.toBN(me.address), max_swap);
         console.log(result);
+        */
 
-        var r = await sag.gamble(result.max, result.seed, {
+        result = {
+            max: '0xf8932d44e06dbd318f4e118e0c4297d66ecd3db49274a4616bd05da1e2deeaa8',
+            seed: '0xa59b6f0100000000000000000000000000000000000000000000000000000000',
+        };
+
+        // sag_proxy.gamble will fail because sag_proxy is already a winner!
         // var r = await sag_proxy.gamble(result.max, result.seed, {
+        var r = await sag.gamble(result.max, result.seed, {
             from: me.address,
-            gas: 3000000,
+            gas: gas_limit,
         });
 
         console.log(r);
         for (let i = 0; i < r.logs.length; i++) {
             let log = r.logs[i];
-            if (log.event == 'HasGambleRequest') {
-                console.log(log.event, web3.utils.toHex(log.args.sender));
+            if (log.event == 'GambleRequest') {
+                console.log(log.event, web3.utils.toHex(log.args.player));
             } else if (log.event == 'GambleResult') {
-                console.log(log.event, web3.utils.toHex(log.args.sender),
-                    web3.utils.toHex(log.args.guess), web3.utils.toHex(log.args.max));
+                console.log(log.event, web3.utils.toHex(log.args.player),
+                    web3.utils.toHex(log.args.seed));
+            } else if (log.event == 'GambleStats') {
+                console.log(log.event, web3.utils.toHex(log.args.player),
+                    web3.utils.toHex(log.args.swap));
             } else {
                 console.log(log.event, log.args);
             }

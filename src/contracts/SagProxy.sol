@@ -3,8 +3,7 @@ pragma solidity ^0.4.17;
 import "./Sag.sol";
 
 contract SagProxy {
-    event RequestRecord(address sender);
-    event HallOfFameRecord(bytes32 msgHash, uint8 v, bytes32 r, bytes32 s);
+    event PrizeRequest(bytes32 msgHash, uint8 v, bytes32 r, bytes32 s);
     event PrizeReady(address winner, bytes prize);
 
     Sag private sag;
@@ -31,10 +30,8 @@ contract SagProxy {
     function requestPrize(bytes32 msgHash, uint8 v, bytes32 r, bytes32 s) public
         returns (bool is_winner)
     {
-        emit RequestRecord(msg.sender);
-
         if (ecrecover(msgHash, v, r, s) == msg.sender && sag.isWinner(msg.sender)) {
-            emit HallOfFameRecord(msgHash, v, r, s);
+            emit PrizeRequest(msgHash, v, r, s);
             return true;
         }
         return false;
