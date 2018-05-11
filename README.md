@@ -12,7 +12,7 @@ There are two contracts here: Sag.sol and SagProxy.sol. We are going to provide 
 
 `SagProxy` is the first interface that user can interact with its *private* contract. The user can invoke `SagProxy.gamble` to play the 'gambling' game in `Sag`. If he wins, he will be recorded in the `Sag`'s storage, then he can ask for the encrypted flag through `SagProxy.requestPrize`. We have a daemon(sagd.js) listening to the events from `SagProxy` and sending flags encrypted by the winner's public key to the winner address. We can not directly give out flags to the winner, because everything in the blockchain is *public*!
 
-It seems that the `sag` instance of `SagProxy` is secret, and user does not need to know its real address, because user can play the gambling game through the public function of the proxy. However, the gambling requires that a recorded winner can not play anymore, and the address of `SagProxy` is already recorded by admin. This can be verified by calling `Sag.isWinner`.
+It seems that the `sag` instance of `SagProxy` is secret, and user does not need to know its real address, because user can play the gambling game through the public function of the proxy. However, a recorded winner is not allowed to play again, and the address of `SagProxy` is already recorded by admin. This can be verified by calling `Sag.isWinner`.
 
 The first trick the player has to know is that even *private* storage of a contract is still accessible, because every transaction is executed on some random miner, who has to known everything about the execution. That means the private `sag` instance in the `SagProxy` instance is known.
 
@@ -22,7 +22,7 @@ The logics in `Sag.gamble` is not very complicated. It generates 32 'random' num
 
 I assume experienced reverser can recover the solidity code in a few hours? Maybe someone has advanced decompiler and debugger for evm. I don't known.
 
-The third trick is that transactions in ethereum requires gas fee. Every instruction costs some gas. If the gas runs out, then the transaction will be aborted and everything rollbacks. The contract sorts a uint256[32] array on *storage* instead of *memory*, which means every swap of two elements uses a lot of gas. There is a modifier `gasLimit` on `Sag.gamble` checking the remaining gas is not too much. If there are two many swaps in the sorting procedure, the transaction will run out of gas and fail. So the seed has to be carefully selected to have as less swaps as possible. The gas of the total execution is linear with the swaps (inverse pairs), the approximate calculation is:
+The third trick is that transactions in ethereum requires gas fee. Every instruction costs some gas. If the gas runs out, then the transaction will be aborted and everything rolls back. The contract sorts a uint256[32] array on *storage* instead of *memory*, which means every swap of two elements uses a lot of gas. There is a modifier `gasLimit` on `Sag.gamble` checking the remaining gas is not too much. If there are too many swaps in the sorting procedure, the transaction will run out of gas and fail. So the seed has to be carefully selected to have as less swaps as possible. The gas of the total execution is linear with the swaps (inverse pairs), the approximate calculation is:
 
 ```
     kGasBase = 971436;
@@ -43,3 +43,8 @@ Eventually the attacker will recieve a flag encrypted by his own pubkey. To make
 The contracts will to be deployed in a public ethereum testnet, [truffle framework](http://truffleframework.com/) is required here.
 
 We have to run a [flag deamon](./src/sagd.js) to monitor events for flag requests. The required packages is listed in [package.json](./src/package.json). The [exploit](./src/exploit.js) has the same dependencies. Both of them has to be run under './src/'.
+
+## TODO
+
+1.  Check PrizeReady event to update winner lists.
+2.  Monitor GambleRequest/GambleResult of Sag.
