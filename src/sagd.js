@@ -2,18 +2,17 @@ const fs = require('fs');
 const Web3 = require('web3');
 const EthCrypto = require('eth-crypto');
 const contract = require('truffle-contract');
+const HDWalletProvider = require("truffle-hdwallet-provider");
+const infura_apikey = "L5DOvapkMowLHO7lEjA3";
+const mnemonic = "loyal feature another nature pet two addict picture minor chair renew wash";
 
 const kHallOfFameDb = 'halloffame.json';
 const kFlag = '../flag';
-const kProvider = 'http://192.168.199.152:8545';
+const kProvider = 'https://ropsten.infura.io/L5DOvapkMowLHO7lEjA3';
 const FLAG = fs.readFileSync(kFlag);
 
-var provider = new Web3.providers.HttpProvider(kProvider)
+var provider = new HDWalletProvider(mnemonic, kProvider, address_index=0);
 var web3 = new Web3(provider);
-
-provider.sendAsync = async function() {
-    await this.send.apply(this, arguments);
-}
 
 var target_addr = process.argv[2];
 console.debug('target address = ' + target_addr);
@@ -26,14 +25,20 @@ var halloffame = fs.existsSync(kHallOfFameDb) ? JSON.parse(fs.readFileSync(kHall
 
 (async () => {
     try {
-        const me = web3.eth.accounts.privateKeyToAccount('0xb494585d106525a4abf8f70b49864deeeeb8d6c504a08c5c622a6b860ee4b21f');
+        const me = web3.eth.accounts.privateKeyToAccount('0x5a8b07e133cd2b60de7e5b47a91ea298965bae13bfe013134685b588f2c1b9ed');
         console.log('using account', me);
         web3.eth.defaultAccount = me.address;
+        const my_addr = provider.getAddress(0);
+
+        if (me.address != web3.utils.toChecksumAddress(my_addr)) {
+            throw "invalid address";
+        }
 
         var sag_proxy = await SagProxy.at(target_addr);
 
         sag_proxy.PrizeRequest(null, {
-            fromBlock: 1
+            fromBlock: 1,
+            address: sag_proxy.address,
         }, async (e, r) => {
             if (!e) {
                 try {
@@ -54,7 +59,7 @@ var halloffame = fs.existsSync(kHallOfFameDb) ? JSON.parse(fs.readFileSync(kHall
                         console.log('prize for', addr, prize);
                         await sag_proxy.deliverPrize(addr, prize, {
                             gas: 1000000,
-                            from: me.address,
+                            from: my_addr,
                         });
                         halloffame[addr] = pubkey;
                         fs.writeFileSync(kHallOfFameDb, JSON.stringify(halloffame));
@@ -62,8 +67,10 @@ var halloffame = fs.existsSync(kHallOfFameDb) ? JSON.parse(fs.readFileSync(kHall
                 } catch (e) {
                     console.error(e);
                 }
+            } else {
+                console.log(e);
             }
-        })
+        });
     } catch (e) {
         console.error(e);
     }
