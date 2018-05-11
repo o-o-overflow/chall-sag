@@ -10,4 +10,4 @@ tags: ["reverse", "crypto"] # list of tags
 author: "slipper"
 stateful: false # true|false two consecutive connections go to the same VM
 to_deploy: false # true|fale this chall needs a VM to be deployed
-is_ready: false # true|false this chall is ready for prime time
+is_ready: true # true|false this chall is ready for prime time
