@@ -1,6 +1,6 @@
 id: "sag" # this needs to be a single word, no spaces
 title: "SAG?" # this is the title that will show up on the scoreboard
-description: "Desc for the scoreboard"
+description: "Check my [contract](https://ropsten.etherscan.io/address/0x2f797ebd6bb007b0bb1df71cb3b827a3e35a7625) for you!"
 # list of files that should be public (these will be made available via the scoreboard)
 public_files: [
     "public_files/SagProxy.sol",
@@ -10,4 +10,4 @@ tags: ["reverse", "crypto"] # list of tags
 author: "slipper"
 stateful: false # true|false two consecutive connections go to the same VM
 to_deploy: false # true|fale this chall needs a VM to be deployed
-is_ready: false # true|false this chall is ready for prime time
+is_ready: true # true|false this chall is ready for prime time
