@@ -32,7 +32,7 @@ Sag.setProvider(provider);
             fromBlock: 1,
             address: sag.address,
         }, (_, r) => {
-            console.log('GambleRequest', r.args.player, Web3.utils.toHex(r.args.seed));
+            console.log('GambleResult', r.args.player, Web3.utils.toHex(r.args.seed));
         });
 
     } catch (e) {
