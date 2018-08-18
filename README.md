@@ -30,7 +30,7 @@ The third trick is that transactions in ethereum requires gas fee. Every instruc
     TotalGas = kGasBase + TotalSwap * kGasSwap
 ```
 
-If we have a gas limit of 200000, the user has to choose a seed with swaps less than (200000 - 971436) / 10576 = 97.25. He could find a good seed by brute forcing.
+~~If we have a gas limit of 200000, the user has to choose a seed with swaps less than (200000 - 971436) / 10576 = 97.25. He could find a good seed by brute forcing.~~ This calculation only applies to the *first* user of this contract, because changing `data` storage from zero to non-zero value is more expensive in gas. Since I tested my exploit before everyone else, it's still a fair game for players in DEFCON CTF quals.
 
 [prob.py](./exploit/prob.py) calculates probabilities of inverse pairs for N(=32) random numbers. We can see that the probability of a random array has inverse pairs less than 97 is 7.74165222216e-08, and you can expect this happens in 12917139.2786 attempts.
 
